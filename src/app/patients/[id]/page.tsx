@@ -1,5 +1,6 @@
 'use client';
 
+import { useState, useEffect, useCallback } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { useDemoContext } from '@/lib/demo-context';
@@ -10,38 +11,287 @@ import { Card, CardHeader, CardTitle, CardContent, CardFooter } from '@/componen
 import { Badge } from '@/components/ui/badge';
 import { DevIndicator } from '@/components/ui/dev-indicator';
 import { formatDate, getStatusColor, getStatusLabel, cn } from '@/lib/utils';
-import type { CaseStatus } from '@/lib/types';
 
 // ---------------------------------------------------------------------------
-// Timeline helpers
+// Case Timeline — Visit-based checklist
 // ---------------------------------------------------------------------------
 
-const STATUS_PROGRESSION: CaseStatus[] = [
-  'consultation',
-  'capture',
-  'analysis',
-  'design',
-  'treatment',
-  'complete',
-];
-
-const TIMELINE_LABELS: Record<CaseStatus, string> = {
-  consultation: 'Case Created',
-  capture: 'Photos Captured',
-  analysis: 'Analysis Complete',
-  design: 'Design Review',
-  treatment: 'Treatment Plan',
-  complete: 'Complete',
-};
-
-function getCompletedIndex(status: CaseStatus): number {
-  return STATUS_PROGRESSION.indexOf(status);
+interface TimelineItem {
+  label: string;
+  children: string[];
 }
 
-function getMockTimestamp(caseCreated: string, stepIndex: number): string {
-  const base = new Date(caseCreated);
-  base.setDate(base.getDate() + stepIndex);
-  return base.toISOString();
+const VISIT_TIMELINE: TimelineItem[] = [
+  {
+    label: 'Visit One: Consultation',
+    children: [
+      'X-Ray',
+      'Exam',
+      'Photograph',
+      'Presentation',
+      'Address Your Questions',
+      'Fee Proposal',
+      'Impression for Wax Design',
+      'Creation of Design and Wax',
+    ],
+  },
+  {
+    label: 'Visit Two: Design Review',
+    children: [
+      'Discuss and answer all questions regarding design',
+      'Preparation of tooth structure',
+      'Placement of provisionals to show aesthetic outcome',
+      'Review results and make any modifications needed',
+    ],
+  },
+  {
+    label: 'Visit Three: Final Placement',
+    children: [
+      'Custom crafting of final porcelain restorations',
+      'Placed initially with temporary cement to preview',
+      'Photographs taken',
+      'Approval obtained for final placement',
+      'Final permanent cementation of restorations',
+      'Review',
+    ],
+  },
+];
+
+// Build a flat key for each checkbox: "caseId:visitIdx:childIdx"
+function buildKey(caseId: string, visitIdx: number, childIdx: number) {
+  return `${caseId}:${visitIdx}:${childIdx}`;
+}
+
+// LocalStorage key
+const LS_TIMELINE_KEY = 'dv-pro:timeline-checks';
+
+function readChecks(): Record<string, string> {
+  if (typeof window === 'undefined') return {};
+  try {
+    const raw = localStorage.getItem(LS_TIMELINE_KEY);
+    return raw ? JSON.parse(raw) : {};
+  } catch {
+    return {};
+  }
+}
+
+function writeChecks(checks: Record<string, string>) {
+  localStorage.setItem(LS_TIMELINE_KEY, JSON.stringify(checks));
+}
+
+// ---------------------------------------------------------------------------
+// Timeline Component
+// ---------------------------------------------------------------------------
+
+function CaseTimeline({ caseId }: { caseId: string }) {
+  const [checks, setChecks] = useState<Record<string, string>>({});
+
+  useEffect(() => {
+    setChecks(readChecks());
+  }, []);
+
+  const toggle = useCallback(
+    (key: string) => {
+      setChecks((prev) => {
+        const next = { ...prev };
+        if (next[key]) {
+          delete next[key];
+        } else {
+          next[key] = new Date().toISOString();
+        }
+        writeChecks(next);
+        return next;
+      });
+    },
+    [],
+  );
+
+  // Check if all children in a visit are complete
+  function isVisitComplete(visitIdx: number) {
+    return VISIT_TIMELINE[visitIdx].children.every(
+      (_, childIdx) => !!checks[buildKey(caseId, visitIdx, childIdx)],
+    );
+  }
+
+  // Get latest completion date for a visit
+  function visitCompletedDate(visitIdx: number): string | null {
+    const dates = VISIT_TIMELINE[visitIdx].children
+      .map((_, childIdx) => checks[buildKey(caseId, visitIdx, childIdx)])
+      .filter(Boolean);
+    if (dates.length === 0) return null;
+    if (dates.length < VISIT_TIMELINE[visitIdx].children.length) return null;
+    return dates.sort().pop() ?? null;
+  }
+
+  // Count completed items in a visit
+  function visitProgress(visitIdx: number) {
+    const total = VISIT_TIMELINE[visitIdx].children.length;
+    const done = VISIT_TIMELINE[visitIdx].children.filter(
+      (_, childIdx) => !!checks[buildKey(caseId, visitIdx, childIdx)],
+    ).length;
+    return { done, total };
+  }
+
+  return (
+    <div className="w-full space-y-4">
+      <p className="text-xs font-medium text-brand-warm-gray uppercase tracking-wider mb-1">
+        Case Timeline
+      </p>
+      {VISIT_TIMELINE.map((visit, visitIdx) => {
+        const complete = isVisitComplete(visitIdx);
+        const completedAt = visitCompletedDate(visitIdx);
+        const { done, total } = visitProgress(visitIdx);
+        const prevComplete = visitIdx === 0 || isVisitComplete(visitIdx - 1);
+
+        return (
+          <div key={visitIdx} className="relative">
+            {/* Visit header */}
+            <div className={cn(
+              'flex items-center justify-between py-2 px-3 rounded-lg transition-colors',
+              complete
+                ? 'bg-brand-gold/10'
+                : 'bg-brand-cream/50',
+            )}>
+              <div className="flex items-center gap-2.5">
+                {/* Visit status icon */}
+                <div className={cn(
+                  'w-5 h-5 rounded-full flex items-center justify-center shrink-0 text-[10px] font-bold',
+                  complete
+                    ? 'bg-brand-gold text-white'
+                    : done > 0
+                      ? 'bg-brand-gold/30 text-brand-gold border border-brand-gold/50'
+                      : 'bg-white border-2 border-brand-light-gray text-brand-mid-gray',
+                )}>
+                  {complete ? (
+                    <svg width="10" height="10" viewBox="0 0 12 12" fill="none">
+                      <path d="M2.5 6L5 8.5L9.5 3.5" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+                    </svg>
+                  ) : (
+                    <span>{visitIdx + 1}</span>
+                  )}
+                </div>
+                <span className={cn(
+                  'text-sm font-medium',
+                  complete ? 'text-brand-gold' : 'text-brand-black',
+                )}>
+                  {visit.label}
+                </span>
+              </div>
+              <div className="flex items-center gap-3">
+                {/* Progress */}
+                <span className="text-[10px] font-mono text-brand-mid-gray">
+                  {done}/{total}
+                </span>
+                {/* Completion date */}
+                {completedAt && (
+                  <span className="text-[10px] text-brand-gold font-mono">
+                    {formatDate(completedAt)}
+                  </span>
+                )}
+              </div>
+            </div>
+
+            {/* Checklist items */}
+            <div className="ml-6 mt-1 space-y-0.5">
+              {visit.children.map((child, childIdx) => {
+                const key = buildKey(caseId, visitIdx, childIdx);
+                const isChecked = !!checks[key];
+                const checkedAt = checks[key] ?? null;
+
+                return (
+                  <label
+                    key={childIdx}
+                    className={cn(
+                      'flex items-center gap-2.5 py-1.5 px-2 rounded-md cursor-pointer transition-colors group',
+                      isChecked
+                        ? 'hover:bg-brand-gold/5'
+                        : 'hover:bg-brand-cream',
+                    )}
+                  >
+                    {/* Checkbox */}
+                    <div className="relative shrink-0">
+                      <input
+                        type="checkbox"
+                        checked={isChecked}
+                        onChange={() => toggle(key)}
+                        className="sr-only peer"
+                      />
+                      <div className={cn(
+                        'w-4 h-4 rounded border-[1.5px] flex items-center justify-center transition-all',
+                        isChecked
+                          ? 'bg-brand-gold border-brand-gold'
+                          : 'bg-white border-brand-light-gray group-hover:border-brand-gold/50',
+                      )}>
+                        {isChecked && (
+                          <svg width="9" height="9" viewBox="0 0 12 12" fill="none">
+                            <path d="M2.5 6L5 8.5L9.5 3.5" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+                          </svg>
+                        )}
+                      </div>
+                    </div>
+
+                    {/* Label */}
+                    <span className={cn(
+                      'text-sm flex-1 transition-colors',
+                      isChecked
+                        ? 'text-brand-mid-gray line-through decoration-brand-gold/40'
+                        : 'text-brand-black',
+                    )}>
+                      {child}
+                    </span>
+
+                    {/* Completed date */}
+                    {checkedAt && (
+                      <span className="text-[9px] font-mono text-brand-mid-gray/60 opacity-0 group-hover:opacity-100 transition-opacity">
+                        {formatDate(checkedAt)}
+                      </span>
+                    )}
+                  </label>
+                );
+              })}
+            </div>
+
+            {/* Connecting line between visits */}
+            {visitIdx < VISIT_TIMELINE.length - 1 && (
+              <div className="ml-[21px] mt-1 mb-1">
+                <div className={cn(
+                  'w-0.5 h-3',
+                  complete ? 'bg-brand-gold' : 'bg-brand-light-gray',
+                )} />
+              </div>
+            )}
+          </div>
+        );
+      })}
+
+      {/* Overall progress bar */}
+      {(() => {
+        const totalItems = VISIT_TIMELINE.reduce((sum, v) => sum + v.children.length, 0);
+        const doneItems = VISIT_TIMELINE.reduce(
+          (sum, v, vi) =>
+            sum + v.children.filter((_, ci) => !!checks[buildKey(caseId, vi, ci)]).length,
+          0,
+        );
+        const pct = totalItems > 0 ? Math.round((doneItems / totalItems) * 100) : 0;
+        return (
+          <div className="mt-3 pt-3 border-t border-brand-light-gray/50">
+            <div className="flex items-center justify-between mb-1.5">
+              <span className="text-[10px] uppercase tracking-wider text-brand-mid-gray font-medium">
+                Overall Progress
+              </span>
+              <span className="text-xs font-mono text-brand-black">{pct}%</span>
+            </div>
+            <div className="h-1.5 bg-brand-light-gray/50 rounded-full overflow-hidden">
+              <div
+                className="h-full bg-brand-gold rounded-full transition-all duration-500"
+                style={{ width: `${pct}%` }}
+              />
+            </div>
+          </div>
+        );
+      })()}
+    </div>
+  );
 }
 
 // ---------------------------------------------------------------------------
@@ -212,57 +462,7 @@ export default function PatientProfilePage() {
 
                 {/* Timeline */}
                 <CardFooter className="pt-4 border-t border-brand-light-gray">
-                  <div className="w-full">
-                    <p className="text-xs font-medium text-brand-warm-gray uppercase tracking-wider mb-3">
-                      Case Timeline
-                    </p>
-                    <div className="relative pl-6">
-                      {STATUS_PROGRESSION.map((step, i) => {
-                        const completedIdx = getCompletedIndex(c.status);
-                        const isCompleted = i <= completedIdx;
-                        const isLast = i === STATUS_PROGRESSION.length - 1;
-
-                        return (
-                          <div key={step} className="relative pb-4 last:pb-0">
-                            {/* Connecting line */}
-                            {!isLast && (
-                              <div
-                                className={cn(
-                                  'absolute left-[-18px] top-3 w-0.5 h-full',
-                                  i < completedIdx ? 'bg-brand-gold' : 'bg-brand-light-gray'
-                                )}
-                              />
-                            )}
-                            {/* Dot */}
-                            <div
-                              className={cn(
-                                'absolute left-[-22px] top-1 w-2.5 h-2.5 rounded-full border-2',
-                                isCompleted
-                                  ? 'bg-brand-gold border-brand-gold'
-                                  : 'bg-white border-brand-light-gray'
-                              )}
-                            />
-                            {/* Content */}
-                            <div className="flex items-center justify-between">
-                              <span
-                                className={cn(
-                                  'text-sm',
-                                  isCompleted ? 'text-brand-black font-medium' : 'text-brand-mid-gray'
-                                )}
-                              >
-                                {TIMELINE_LABELS[step]}
-                              </span>
-                              {isCompleted && (
-                                <span className="text-xs text-brand-mid-gray">
-                                  {formatDate(getMockTimestamp(c.createdAt, i))}
-                                </span>
-                              )}
-                            </div>
-                          </div>
-                        );
-                      })}
-                    </div>
-                  </div>
+                  <CaseTimeline caseId={c.id} />
                 </CardFooter>
               </Card>
             ))}
