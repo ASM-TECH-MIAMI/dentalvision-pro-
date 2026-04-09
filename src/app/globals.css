@@ -3,25 +3,69 @@
 @tailwind utilities;
 
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  --brand-black: #0A0A0A;
+  --brand-charcoal: #1A1A1A;
+  --brand-warm-gray: #2D2D2D;
+  --brand-mid-gray: #6B6B6B;
+  --brand-light-gray: #F5F5F3;
+  --brand-cream: #FAF9F7;
+  --brand-gold: #C4A265;
+  --brand-gold-light: #D4B87A;
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+* {
+  scrollbar-width: thin;
+  scrollbar-color: var(--brand-warm-gray) transparent;
 }
 
 body {
-  color: var(--foreground);
-  background: var(--background);
-  font-family: Arial, Helvetica, sans-serif;
+  color: var(--brand-warm-gray);
+  background: var(--brand-cream);
+  font-family: var(--font-inter), system-ui, sans-serif;
 }
 
+/* Heading style utilities */
 @layer utilities {
-  .text-balance {
-    text-wrap: balance;
+  .heading-luxury {
+    font-family: var(--font-playfair), Georgia, serif;
+    text-transform: uppercase;
+    letter-spacing: 0.15em;
+    font-weight: 700;
   }
+  .heading-luxury-sm {
+    font-family: var(--font-playfair), Georgia, serif;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    font-weight: 600;
+  }
+}
+
+/* Scan line animation for AI analysis */
+@keyframes scan-line {
+  0% { transform: translateY(0); }
+  100% { transform: translateY(100%); }
+}
+
+@keyframes pulse-gold {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.5; }
+}
+
+@keyframes shimmer {
+  0% { background-position: -200% 0; }
+  100% { background-position: 200% 0; }
+}
+
+.animate-scan-line {
+  animation: scan-line 2s ease-in-out infinite;
+}
+
+.animate-pulse-gold {
+  animation: pulse-gold 2s ease-in-out infinite;
+}
+
+.animate-shimmer {
+  background: linear-gradient(90deg, transparent 0%, var(--brand-gold) 50%, transparent 100%);
+  background-size: 200% 100%;
+  animation: shimmer 1.5s ease-in-out infinite;
 }
