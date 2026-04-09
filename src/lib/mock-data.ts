@@ -19,7 +19,7 @@ import type {
 export const mockUser: DemoUser = {
   id: 'dr-001',
   name: 'Dr. Sam Saleh',
-  email: 'sam@oradentistry.com',
+  email: 'dr.saleh@dentalvisual.pro',
   practice: 'Ora Dentistry Spa',
   title: 'Cosmetic & Restorative Dentist',
   avatarUrl: 'https://ui-avatars.com/api/?name=Sam+Saleh&background=1e293b&color=f8fafc&size=128',

@@ -9,7 +9,7 @@ export default function LoginPage() {
   const router = useRouter();
   const { login } = useDemoContext();
 
-  const [email, setEmail] = useState('dr.saleh@oradentistry.com');
+  const [email, setEmail] = useState('dr.saleh@dentalvisual.pro');
   const [password, setPassword] = useState('••••••••');
 
   function handleSubmit(e: React.FormEvent) {
