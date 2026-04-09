@@ -11,6 +11,7 @@ import {
   FileText,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { SectionIndicator } from '@/components/ui/dev-indicator';
 
 const navItems = [
   { label: 'Dashboard', href: '/dashboard', icon: LayoutDashboard },
@@ -33,6 +34,7 @@ export function Sidebar() {
         </h1>
         <p className="mt-1 font-sans text-xs text-brand-mid-gray">
           AI Smile Design Studio
+          <SectionIndicator file="src/components/layout/sidebar.tsx" section="Sidebar" />
         </p>
       </div>
 

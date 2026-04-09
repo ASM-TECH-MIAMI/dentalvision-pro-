@@ -8,6 +8,7 @@ import { AppShell } from '@/components/layout/app-shell';
 import { Button } from '@/components/ui/button';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
+import { DevIndicator } from '@/components/ui/dev-indicator';
 import { generateId } from '@/lib/utils';
 
 export default function NewPatientPage() {
@@ -50,6 +51,7 @@ export default function NewPatientPage() {
 
   return (
     <AppShell>
+      <DevIndicator file="src/app/patients/new/page.tsx" section="New Patient" />
       {/* Back link */}
       <Link
         href="/dashboard"

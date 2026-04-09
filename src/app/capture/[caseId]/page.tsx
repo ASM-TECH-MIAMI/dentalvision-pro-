@@ -8,6 +8,7 @@ import { useWebcam } from '@/hooks/use-webcam';
 import { useFaceAnalysis } from '@/hooks/use-face-analysis';
 import { useDemoContext } from '@/lib/demo-context';
 import { cn, generateId } from '@/lib/utils';
+import { DevIndicator } from '@/components/ui/dev-indicator';
 import type { CapturePhotoType } from '@/lib/types';
 
 // ---------------------------------------------------------------------------
@@ -318,6 +319,7 @@ export default function CaptureWizardPage() {
 
   return (
     <div className="bg-brand-black min-h-screen flex flex-col text-white select-none">
+      <DevIndicator file="src/app/capture/[caseId]/page.tsx" section="Capture Wizard" />
       <AnimatePresence mode="wait">
         {/* ============================================================== */}
         {/* CAPTURE MODE                                                    */}

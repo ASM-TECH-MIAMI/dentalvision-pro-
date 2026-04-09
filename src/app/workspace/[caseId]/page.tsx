@@ -31,6 +31,7 @@ import {
   VITA_SHADES,
 } from '@/lib/mock-data';
 import { cn } from '@/lib/utils';
+import { DevIndicator } from '@/components/ui/dev-indicator';
 import DentalArch3D from '@/components/workspace/dental-arch-3d';
 import SculptView from '@/components/workspace/sculpt-view';
 import FrameworkView from '@/components/workspace/framework-view';
@@ -187,6 +188,7 @@ export default function WorkspacePage() {
 
   return (
     <div className="min-h-screen bg-brand-black flex flex-col">
+      <DevIndicator file="src/app/workspace/[caseId]/page.tsx" section="CAD Workspace" />
       {/* ---- Top bar ---------------------------------------------------- */}
       <header className="h-14 bg-brand-charcoal flex items-center justify-between px-6 shrink-0 border-b border-brand-warm-gray/20">
         <div className="flex items-center gap-4">

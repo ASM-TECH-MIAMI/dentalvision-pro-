@@ -13,6 +13,7 @@ import {
   CreditCard,
 } from 'lucide-react';
 import { AppShell } from '@/components/layout/app-shell';
+import { DevIndicator } from '@/components/ui/dev-indicator';
 import { Button } from '@/components/ui/button';
 import {
   Card,
@@ -94,6 +95,7 @@ export default function TreatmentPlanPage() {
 
   return (
     <AppShell>
+      <DevIndicator file="src/app/treatment/[caseId]/page.tsx" section="Treatment Plan" />
       <div className="max-w-5xl mx-auto space-y-8">
         {/* ---- Header --------------------------------------------------- */}
         <motion.div

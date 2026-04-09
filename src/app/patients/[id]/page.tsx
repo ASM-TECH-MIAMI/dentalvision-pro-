@@ -8,6 +8,7 @@ import { AppShell } from '@/components/layout/app-shell';
 import { Button } from '@/components/ui/button';
 import { Card, CardHeader, CardTitle, CardContent, CardFooter } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
+import { DevIndicator } from '@/components/ui/dev-indicator';
 import { formatDate, getStatusColor, getStatusLabel, cn } from '@/lib/utils';
 import type { CaseStatus } from '@/lib/types';
 
@@ -75,6 +76,7 @@ export default function PatientProfilePage() {
 
   return (
     <AppShell>
+      <DevIndicator file="src/app/patients/[id]/page.tsx" section="Patient Detail" />
       {/* ------------------------------------------------------------------ */}
       {/* Header */}
       {/* ------------------------------------------------------------------ */}

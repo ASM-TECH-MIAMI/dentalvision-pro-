@@ -17,6 +17,7 @@ import {
 import { Button } from '@/components/ui/button';
 import { useWebcam } from '@/hooks/use-webcam';
 import { useDemoContext } from '@/lib/demo-context';
+import { DevIndicator } from '@/components/ui/dev-indicator';
 import { mockCases, mockPatients } from '@/lib/mock-data';
 import { cn } from '@/lib/utils';
 
@@ -118,6 +119,7 @@ export default function ConsultPage() {
 
   return (
     <div className="min-h-screen bg-brand-black flex flex-col">
+      <DevIndicator file="src/app/consult/[caseId]/page.tsx" section="Consultation" />
       {/* ---- Main layout ------------------------------------------------ */}
       <div className="flex flex-1 overflow-hidden">
         {/* ---- Video area (left) --------------------------------------- */}

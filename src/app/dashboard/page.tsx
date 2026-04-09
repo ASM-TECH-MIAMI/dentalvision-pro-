@@ -5,6 +5,7 @@ import { Briefcase, Camera, Clock, Heart, Plus } from 'lucide-react';
 import { AppShell } from '@/components/layout/app-shell';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
+import { DevIndicator } from '@/components/ui/dev-indicator';
 import {
   mockCases,
   recentActivity,
@@ -69,6 +70,7 @@ const stats = [
 export default function DashboardPage() {
   return (
     <AppShell>
+      <DevIndicator file="src/app/dashboard/page.tsx" section="Dashboard" />
       {/* ---- Header ---- */}
       <div className="flex items-center justify-between mb-8">
         <h1 className="font-serif uppercase tracking-[0.15em] text-brand-black text-2xl">

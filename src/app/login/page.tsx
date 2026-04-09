@@ -3,6 +3,7 @@
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { Button } from '@/components/ui/button';
+import { DevIndicator } from '@/components/ui/dev-indicator';
 import { useDemoContext } from '@/lib/demo-context';
 
 export default function LoginPage() {
@@ -20,6 +21,7 @@ export default function LoginPage() {
 
   return (
     <div className="flex min-h-screen">
+      <DevIndicator file="src/app/login/page.tsx" section="Login" />
       {/* ---- Left hero (55%) ---- */}
       <div className="hidden lg:flex w-[55%] bg-brand-black items-center justify-center">
         <div className="text-center">
